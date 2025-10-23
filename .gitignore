@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pth
+*.pkl
+*.csv
+*.parquet
+.DS_Store
+.ipynb_checkpoints/
+results/
+saved_models/
+data/raw/
+data/processed/
