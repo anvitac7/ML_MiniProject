@@ -67,62 +67,62 @@ Training progress logs
 ```
 
 ## 📈 Sample Output
-# Time Series Analysis for Store 1
+### Time Series Analysis for Store 1
 - Time period: 2010-02-05 to 2012-10-26
 - Total weeks: 143
 - Average weekly sales: $1,555,264.40
 
-# Forecasting Results
+### Forecasting Results
 - Week 1:  $1,655,571.88
 - Week 2:  $1,656,648.62
-- ...
+  ...
 - Week 12: $1,693,464.12
   
 - Average forecast: $1,652,784.38
 
-## 📊 PERFORMANCE METRICS:
+### 📊 PERFORMANCE METRICS:
 - Forecast vs Historical: +6.27%
 - Accuracy: 94.3%
 - Volatility Reduction: 72%
 
-## 🧠 How It Works
-# 1. Data Processing
+### 🧠 How It Works
+#### 1. Data Processing
 - Loads and cleans Walmart sales data
 - Creates sequences of 52 weeks to predict the next 4 weeks
 - Normalizes data for better training
 
-# 2. PatchTST Model
+#### 2. PatchTST Model
 - Advanced transformer architecture
 - self.encoder = nn.TransformerEncoder(
--   d_model=64, nhead=8, 
--   num_layers=3, batch_first=True)
+  d_model=64, nhead=8, 
+  num_layers=3, batch_first=True)
 - Patching: Breaks time series into meaningful segments
 - Channel Independence: Handles each store separately
 - Multi-Head Attention: Captures complex temporal patterns
 
-# 3. Training Process
+#### 3. Training Process
 - 100 epochs
 - 80–20 train-validation split
 - Mean Squared Error (MSE) loss function
 - Adam optimizer with learning rate 0.001
 
-# 4. Forecasting
+#### 4. Forecasting
 - Generates 12-week ahead predictions
 - Provides confidence intervals
 - Compares performance across multiple stores
 
 ## 💡 Business Applications
-# 🏪 Store Managers
+### 🏪 Store Managers
 - Inventory Planning: Prepare for expected sales increases
 - Staff Scheduling: Optimize workforce based on demand
 - Promotion Planning: Time marketing campaigns with peak weeks
 
-## 📊 Corporate Strategy
+### 📊 Corporate Strategy
 - Performance Comparison: Identify high-performing stores
 - Risk Management: Understand sales volatility
 - Growth Planning: Forecast future revenue trends
 
-# 🎓 Academic Significance
+### 🎓 Academic Significance
 - This project demonstrates:
 - Real-world application of the PatchTST architecture
 - Use of supervised learning for time-series forecasting
@@ -130,13 +130,13 @@ Training progress logs
 - A scalable solution applicable across multiple locations
 
 ## 📊 Results Interpretation
-# ✅ Green Flags
+### ✅ Green Flags
 - Training loss decreases steadily
 - Validation loss stable → no overfitting
 - Forecasts close to historical averages
 - Low volatility → confident predictions
 
-# 🚩 Red Flags
+### 🚩 Red Flags
 - Validation loss increasing → possible overfitting
 High forecast volatility → uncertain predictions
 Large deviations from historical patterns → check data quality
