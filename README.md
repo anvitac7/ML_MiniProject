@@ -68,6 +68,8 @@ complete_forecasting_results.png – Forecast charts
 comprehensive_forecasting_analysis.png – Detailed analysis
 Training progress logs
 
+```
+
 📈 Sample Output
 yaml
 Copy code
