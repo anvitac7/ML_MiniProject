@@ -40,8 +40,6 @@ source .venv/bin/activate
 # 3. Install dependencies
 pip install -r requirements.txt
 Required Packages
-shell
-Copy code
 torch>=1.9.0
 pandas>=1.3.0
 numpy>=1.21.0
@@ -59,8 +57,6 @@ Holiday flags
 Economic indicators (temperature, fuel price, CPI, unemployment)
 
 Step 2: Run the Forecasting Pipeline
-bash
-Copy code
 python src/main.py
 Step 3: View Results
 Check the results/ directory for:
@@ -88,61 +84,59 @@ Training progress logs
 - Forecast vs Historical: +6.27%
 - Accuracy: 94.3%
 - Volatility Reduction: 72%
-🧠 How It Works
-1. Data Processing
-Loads and cleans Walmart sales data
-Creates sequences of 52 weeks to predict the next 4 weeks
-Normalizes data for better training
 
-2. PatchTST Model
-python
-Copy code
-# Advanced transformer architecture
-self.encoder = nn.TransformerEncoder(
-    d_model=64, nhead=8, 
-    num_layers=3, batch_first=True
-)
-Patching: Breaks time series into meaningful segments
-Channel Independence: Handles each store separately
-Multi-Head Attention: Captures complex temporal patterns
+## 🧠 How It Works
+# 1. Data Processing
+- Loads and cleans Walmart sales data
+- Creates sequences of 52 weeks to predict the next 4 weeks
+- Normalizes data for better training
 
-3. Training Process
-100 epochs
-80–20 train-validation split
-Mean Squared Error (MSE) loss function
-Adam optimizer with learning rate 0.001
+# 2. PatchTST Model
+- Advanced transformer architecture
+- self.encoder = nn.TransformerEncoder(
+-   d_model=64, nhead=8, 
+-   num_layers=3, batch_first=True)
+- Patching: Breaks time series into meaningful segments
+- Channel Independence: Handles each store separately
+- Multi-Head Attention: Captures complex temporal patterns
 
-4. Forecasting
-Generates 12-week ahead predictions
-Provides confidence intervals
-Compares performance across multiple stores
+# 3. Training Process
+- 100 epochs
+- 80–20 train-validation split
+- Mean Squared Error (MSE) loss function
+- Adam optimizer with learning rate 0.001
 
-💡 Business Applications
-🏪 Store Managers
-Inventory Planning: Prepare for expected sales increases
-Staff Scheduling: Optimize workforce based on demand
-Promotion Planning: Time marketing campaigns with peak weeks
+# 4. Forecasting
+- Generates 12-week ahead predictions
+- Provides confidence intervals
+- Compares performance across multiple stores
 
-📊 Corporate Strategy
-Performance Comparison: Identify high-performing stores
-Risk Management: Understand sales volatility
-Growth Planning: Forecast future revenue trends
+## 💡 Business Applications
+# 🏪 Store Managers
+- Inventory Planning: Prepare for expected sales increases
+- Staff Scheduling: Optimize workforce based on demand
+- Promotion Planning: Time marketing campaigns with peak weeks
 
-🎓 Academic Significance
-This project demonstrates:
-Real-world application of the PatchTST architecture
-Use of supervised learning for time-series forecasting
-Tangible business impact of AI in retail
-A scalable solution applicable across multiple locations
+## 📊 Corporate Strategy
+- Performance Comparison: Identify high-performing stores
+- Risk Management: Understand sales volatility
+- Growth Planning: Forecast future revenue trends
 
-📊 Results Interpretation
-✅ Green Flags
-Training loss decreases steadily
-Validation loss stable → no overfitting
-Forecasts close to historical averages
-Low volatility → confident predictions
+# 🎓 Academic Significance
+- This project demonstrates:
+- Real-world application of the PatchTST architecture
+- Use of supervised learning for time-series forecasting
+- Tangible business impact of AI in retail
+- A scalable solution applicable across multiple locations
 
-🚩 Red Flags
-Validation loss increasing → possible overfitting
+## 📊 Results Interpretation
+# ✅ Green Flags
+- Training loss decreases steadily
+- Validation loss stable → no overfitting
+- Forecasts close to historical averages
+- Low volatility → confident predictions
+
+# 🚩 Red Flags
+- Validation loss increasing → possible overfitting
 High forecast volatility → uncertain predictions
 Large deviations from historical patterns → check data quality
