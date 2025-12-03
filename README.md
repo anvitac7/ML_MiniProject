@@ -70,25 +70,24 @@ Training progress logs
 
 ```
 
-📈 Sample Output
-yaml
-Copy code
-=== Time Series Analysis for Store 1 ===
-Time period: 2010-02-05 to 2012-10-26
-Total weeks: 143
-Average weekly sales: $1,555,264.40
+## 📈 Sample Output
+# Time Series Analysis for Store 1
+- Time period: 2010-02-05 to 2012-10-26
+- Total weeks: 143
+- Average weekly sales: $1,555,264.40
 
-=== Forecasting Results ===
-Week 1:  $1,655,571.88
-Week 2:  $1,656,648.62
-...
-Week 12: $1,693,464.12
+# Forecasting Results
+- Week 1:  $1,655,571.88
+- Week 2:  $1,656,648.62
+- ...
+- Week 12: $1,693,464.12
+  
+- Average forecast: $1,652,784.38
 
-Average forecast: $1,652,784.38
-📊 PERFORMANCE METRICS:
-   Forecast vs Historical: +6.27%
-   Accuracy: 94.3%
-   Volatility Reduction: 72%
+## 📊 PERFORMANCE METRICS:
+- Forecast vs Historical: +6.27%
+- Accuracy: 94.3%
+- Volatility Reduction: 72%
 🧠 How It Works
 1. Data Processing
 Loads and cleans Walmart sales data
