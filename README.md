@@ -80,12 +80,12 @@ Training progress logs
   
 - Average forecast: $1,652,784.38
 
-### 📊 PERFORMANCE METRICS:
+## 📊 PERFORMANCE METRICS:
 - Forecast vs Historical: +6.27%
 - Accuracy: 94.3%
 - Volatility Reduction: 72%
 
-### 🧠 How It Works
+## 🧠 How It Works
 #### 1. Data Processing
 - Loads and cleans Walmart sales data
 - Creates sequences of 52 weeks to predict the next 4 weeks
@@ -138,5 +138,5 @@ Training progress logs
 
 ### 🚩 Red Flags
 - Validation loss increasing → possible overfitting
-High forecast volatility → uncertain predictions
-Large deviations from historical patterns → check data quality
+- High forecast volatility → uncertain predictions
+- Large deviations from historical patterns → check data quality
