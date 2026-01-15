@@ -50,6 +50,7 @@ ML_MiniProject/
 ├── requirements.txt
 └── README.md
 
+
 ---
 
 ## 🚀 How to Run
@@ -99,3 +100,4 @@ You can extend it by adding more features or trying different forecasting models
 
 ## 🙌 Author
 Anvita Choudhary
+
