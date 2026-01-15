@@ -36,20 +36,16 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 ---
-
 ## 🗂️ Project Structure
 ML_MiniProject/
-│
 ├── data/                   # Dataset files
 ├── src/                    # Source code
 │   ├── preprocessing.py    # Data cleaning and preparation
 │   ├── model.py            # PatchTST model
 │   ├── train.py            # Model training
 │   └── evaluate.py         # Model evaluation
-│
 ├── requirements.txt
 └── README.md
-
 
 ---
 
@@ -60,6 +56,7 @@ git clone https://github.com/anvitac7/ML_MiniProject.git
 cd ML_MiniProject
 ```
 Add the dataset to the data/ folder.
+
 The dataset should include:
 - Store ID
 - Date
@@ -86,8 +83,9 @@ python src/evaluate.py
 
 ## 🔍 Model Used
 
-- PatchTST (Patch Time Series Transformer)
-- A transformer architecture designed for long-term time-series forecasting by learning temporal dependencies through attention mechanisms.
+PatchTST (Patch Time Series Transformer)
+
+A transformer architecture designed for long-term time-series forecasting by learning temporal dependencies through attention mechanisms.
 
 ---
 
@@ -100,5 +98,6 @@ python src/evaluate.py
 
 ## 🙌 Author
 Anvita Choudhary
+
 
 
