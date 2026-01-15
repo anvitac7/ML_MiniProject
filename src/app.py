@@ -34,11 +34,17 @@ def load_resources(store_id):
     return dataset, data, p_model, l_model
 
 # --- Header Section ---
-st.title("🏪 Walmart Sales Intelligence Dashboard")
 st.markdown("""
-    Welcome! This tool uses **Advanced Artificial Intelligence** to predict future sales for Walmart stores. 
-    It compares two different AI "brains" to see which one understands your store's patterns better.
-""")
+    <style>
+    .main { background-color: #f5f7f9; }
+    .stMetric { 
+        background-color: #ffffff; 
+        padding: 15px; 
+        border-radius: 10px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+    }
+    </style>
+    """, unsafe_allow_html=True) # Change this line
 
 # --- Sidebar Inputs ---
 st.sidebar.header("🕹️ Control Panel")
