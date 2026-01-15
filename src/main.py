@@ -8,8 +8,13 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
+import os
+import argparse
+import yaml
+from pathlib import Path
 
-# Define the missing classes
+# ========== FIXED: Define the missing classes ==========
+
 class WalmartForecastAnalyzer:
     def __init__(self):
         self.data = None
@@ -30,6 +35,9 @@ class WalmartForecastAnalyzer:
     
     def analyze_time_series_properties(self, store_num=1):
         """Analyze time series properties for a specific store"""
+        if self.data is None:
+            raise ValueError("Data not loaded. Call load_and_preprocess_data first.")
+            
         store_data = self.data[self.data['Store'] == store_num].copy()
         store_data = store_data.set_index('Date')
         
@@ -45,11 +53,17 @@ class WalmartForecastAnalyzer:
     
     def create_forecasting_dataset(self, store_num=1, seq_len=52, pred_len=4):
         """Create sequences for time series forecasting"""
+        if self.data is None:
+            raise ValueError("Data not loaded. Call load_and_preprocess_data first.")
+            
         store_data = self.data[self.data['Store'] == store_num].copy()
         store_data = store_data.sort_values('Date')
         
         # Use only sales data for univariate forecasting
         sales_data = store_data['Weekly_Sales'].values
+        
+        if len(sales_data) < seq_len + pred_len:
+            raise ValueError(f"Not enough data for store {store_num}. Need at least {seq_len + pred_len} weeks, got {len(sales_data)}")
         
         # Normalize
         sales_normalized = self.scaler.fit_transform(sales_data.reshape(-1, 1)).flatten()
@@ -66,7 +80,187 @@ class WalmartForecastAnalyzer:
         
         return np.array(sequences), np.array(targets), sales_data
 
-# Define the missing enhanced_forecasting_pipeline function
+
+class Config:
+    def __init__(self):
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.batch_size = 32
+        self.learning_rate = 0.001
+        self.num_epochs = 100
+        self.seq_len = 52
+        self.pred_len = 4
+
+
+class SimplePatchTST(nn.Module):
+    def __init__(self, config, n_channels):
+        super(SimplePatchTST, self).__init__()
+        self.config = config
+        self.n_channels = n_channels
+        self.seq_len = config.seq_len
+        self.pred_len = config.pred_len
+        
+        # Encoder processes the input sequence
+        self.encoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(
+                d_model=64,
+                nhead=8,
+                dim_feedforward=256,
+                dropout=0.1,
+                batch_first=True
+            ),
+            num_layers=3
+        )
+        
+        # Projection layers
+        self.input_projection = nn.Linear(n_channels, 64)
+        
+        # Output projection
+        self.output_projection = nn.Linear(self.seq_len, self.pred_len)
+        
+        # Final layer to get single value per prediction step
+        self.final_projection = nn.Linear(64, 1)
+        
+    def forward(self, x):
+        # x shape: (batch_size, seq_len, n_channels)
+        batch_size, seq_len, n_channels = x.shape
+        
+        # Project input
+        x = self.input_projection(x)
+        
+        # Apply transformer encoder
+        encoded = self.encoder(x)
+        
+        # Transpose and project to prediction length
+        encoded_t = encoded.transpose(1, 2)
+        pred_features = self.output_projection(encoded_t)
+        
+        # Transpose back and project to output dimension
+        pred_features = pred_features.transpose(1, 2)
+        output = self.final_projection(pred_features)
+        
+        return output
+
+
+class EnhancedPatchTSTForecaster:
+    def __init__(self, config):
+        self.config = config
+        self.device = config.device
+        self.model = None
+        self.scaler = None
+        
+    def prepare_patchtst_data(self, forecasting_data):
+        """Prepare data specifically for PatchTST model"""
+        train_seq = forecasting_data['train_sequences']
+        train_targ = forecasting_data['train_targets']
+        val_seq = forecasting_data['val_sequences']
+        val_targ = forecasting_data['val_targets']
+        
+        # Convert to PyTorch tensors
+        train_sequences = torch.FloatTensor(train_seq).unsqueeze(-1)
+        train_targets = torch.FloatTensor(train_targ).unsqueeze(-1)
+        val_sequences = torch.FloatTensor(val_seq).unsqueeze(-1)
+        val_targets = torch.FloatTensor(val_targ).unsqueeze(-1)
+        
+        print(f"Input sequences shape: {train_sequences.shape}")
+        print(f"Target sequences shape: {train_targets.shape}")
+        
+        # Create data loaders
+        train_dataset = TensorDataset(train_sequences, train_targets)
+        val_dataset = TensorDataset(val_sequences, val_targets)
+        
+        train_loader = DataLoader(train_dataset, batch_size=self.config.batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=self.config.batch_size, shuffle=False)
+        
+        return train_loader, val_loader
+    
+    def train_model(self, train_loader, val_loader):
+        """Train the PatchTST model with enhanced monitoring"""
+        if self.model is None:
+            raise ValueError("Model not initialized. Call create_model first.")
+            
+        self.model.train()
+        optimizer = optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
+        criterion = nn.MSELoss()
+        
+        train_losses = []
+        val_losses = []
+        
+        for epoch in range(self.config.num_epochs):
+            # Training
+            self.model.train()
+            train_loss = 0
+            for batch_seq, batch_targ in train_loader:
+                batch_seq, batch_targ = batch_seq.to(self.device), batch_targ.to(self.device)
+                
+                optimizer.zero_grad()
+                outputs = self.model(batch_seq)
+                
+                loss = criterion(outputs, batch_targ)
+                loss.backward()
+                optimizer.step()
+                
+                train_loss += loss.item()
+            
+            # Validation
+            self.model.eval()
+            val_loss = 0
+            with torch.no_grad():
+                for batch_seq, batch_targ in val_loader:
+                    batch_seq, batch_targ = batch_seq.to(self.device), batch_targ.to(self.device)
+                    outputs = self.model(batch_seq)
+                    val_loss += criterion(outputs, batch_targ).item()
+            
+            avg_train_loss = train_loss / len(train_loader)
+            avg_val_loss = val_loss / len(val_loader)
+            
+            train_losses.append(avg_train_loss)
+            val_losses.append(avg_val_loss)
+            
+            if epoch % 10 == 0:
+                print(f'Epoch [{epoch}/{self.config.num_epochs}], '
+                      f'Train Loss: {avg_train_loss:.6f}, Val Loss: {avg_val_loss:.6f}')
+        
+        return train_losses, val_losses
+    
+    def forecast_future(self, last_sequence, steps=12):
+        """Generate multi-step forecasts"""
+        if self.model is None:
+            raise ValueError("Model not initialized. Call create_model first.")
+            
+        self.model.eval()
+        forecasts = []
+        current_sequence = last_sequence.clone().to(self.device)
+        
+        with torch.no_grad():
+            for step in range(steps):
+                # Predict next 4 weeks
+                pred = self.model(current_sequence.unsqueeze(0))
+                
+                # Take all predictions for this step
+                step_forecasts = pred[0, :, 0].cpu().numpy()
+                forecasts.extend(step_forecasts)
+                
+                if step < steps - 1:
+                    # Update sequence
+                    remaining_sequence = current_sequence[self.config.pred_len:]
+                    new_predictions = pred[0].detach()
+                    
+                    # Ensure we maintain sequence length
+                    if len(remaining_sequence) + len(new_predictions) == self.config.seq_len:
+                        current_sequence = torch.cat([remaining_sequence, new_predictions], dim=0)
+                    else:
+                        current_sequence = torch.cat([
+                            current_sequence[self.config.pred_len:], 
+                            new_predictions
+                        ], dim=0)
+                        if len(current_sequence) > self.config.seq_len:
+                            current_sequence = current_sequence[-self.config.seq_len:]
+        
+        return forecasts[:steps]
+
+
+# ========== FIXED: Enhanced functions ==========
+
 def enhanced_forecasting_pipeline(df, store_num=1):
     """Enhanced forecasting pipeline"""
     analyzer = WalmartForecastAnalyzer()
@@ -99,211 +293,28 @@ def enhanced_forecasting_pipeline(df, store_num=1):
         'original_sales': original_sales
     }
 
-# Define a simple config class
-class Config:
-    def __init__(self):
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.batch_size = 32
-        self.learning_rate = 0.001
-        self.num_epochs = 100
-        self.seq_len = 52
-        self.pred_len = 4
 
-# Fixed PatchTST model that outputs correct prediction length
-class SimplePatchTST(nn.Module):
-    def __init__(self, config, n_channels):
-        super(SimplePatchTST, self).__init__()
-        self.config = config
-        self.n_channels = n_channels
-        self.seq_len = config.seq_len
-        self.pred_len = config.pred_len
-        
-        # Encoder processes the input sequence
-        self.encoder = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(
-                d_model=64,
-                nhead=8,
-                dim_feedforward=256,
-                dropout=0.1,
-                batch_first=True  # Important: set batch_first=True
-            ),
-            num_layers=3
-        )
-        
-        # Projection layers
-        self.input_projection = nn.Linear(n_channels, 64)
-        
-        # Output projection - directly to prediction length
-        self.output_projection = nn.Linear(self.seq_len, self.pred_len)
-        
-        # Final layer to get single value per prediction step
-        self.final_projection = nn.Linear(64, 1)
-        
-    def forward(self, x):
-        # x shape: (batch_size, seq_len, n_channels)
-        batch_size, seq_len, n_channels = x.shape
-        
-        # Project input
-        x = self.input_projection(x)  # (batch_size, seq_len, 64)
-        
-        # Apply transformer encoder (batch_first=True so no need to transpose)
-        encoded = self.encoder(x)  # (batch_size, seq_len, 64)
-        
-        # Use only the last few time steps for prediction, or use all
-        # Option 1: Use all encoded features and project to prediction length
-        # Transpose to (batch_size, 64, seq_len) for linear layer
-        encoded_t = encoded.transpose(1, 2)  # (batch_size, 64, seq_len)
-        
-        # Project sequence length to prediction length
-        pred_features = self.output_projection(encoded_t)  # (batch_size, 64, pred_len)
-        
-        # Transpose back and project to output dimension
-        pred_features = pred_features.transpose(1, 2)  # (batch_size, pred_len, 64)
-        output = self.final_projection(pred_features)  # (batch_size, pred_len, 1)
-        
-        return output
-
-class EnhancedPatchTSTForecaster:
-    def __init__(self, config):
-        self.config = config
-        self.device = config.device
-        self.model = None
-        self.scaler = None
-        
-    def prepare_patchtst_data(self, forecasting_data):
-        """Prepare data specifically for PatchTST model"""
-        train_seq = forecasting_data['train_sequences']
-        train_targ = forecasting_data['train_targets']
-        val_seq = forecasting_data['val_sequences']
-        val_targ = forecasting_data['val_targets']
-        
-        # Convert to PyTorch tensors
-        train_sequences = torch.FloatTensor(train_seq).unsqueeze(-1)  # Add channel dimension
-        train_targets = torch.FloatTensor(train_targ).unsqueeze(-1)
-        val_sequences = torch.FloatTensor(val_seq).unsqueeze(-1)
-        val_targets = torch.FloatTensor(val_targ).unsqueeze(-1)
-        
-        print(f"Input sequences shape: {train_sequences.shape}")
-        print(f"Target sequences shape: {train_targets.shape}")
-        
-        # Create data loaders
-        train_dataset = TensorDataset(train_sequences, train_targets)
-        val_dataset = TensorDataset(val_sequences, val_targets)
-        
-        train_loader = DataLoader(train_dataset, batch_size=self.config.batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=self.config.batch_size, shuffle=False)
-        
-        return train_loader, val_loader
-    
-    def train_model(self, train_loader, val_loader):
-        """Train the PatchTST model with enhanced monitoring"""
-        self.model.train()
-        optimizer = optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
-        criterion = nn.MSELoss()
-        
-        train_losses = []
-        val_losses = []
-        
-        for epoch in range(self.config.num_epochs):
-            # Training
-            self.model.train()
-            train_loss = 0
-            for batch_seq, batch_targ in train_loader:
-                batch_seq, batch_targ = batch_seq.to(self.device), batch_targ.to(self.device)
-                
-                optimizer.zero_grad()
-                outputs = self.model(batch_seq)
-                
-                # Ensure output and target have same shape
-                if outputs.shape != batch_targ.shape:
-                    print(f"Shape mismatch - Output: {outputs.shape}, Target: {batch_targ.shape}")
-                
-                loss = criterion(outputs, batch_targ)
-                loss.backward()
-                optimizer.step()
-                
-                train_loss += loss.item()
-            
-            # Validation
-            self.model.eval()
-            val_loss = 0
-            with torch.no_grad():
-                for batch_seq, batch_targ in val_loader:
-                    batch_seq, batch_targ = batch_seq.to(self.device), batch_targ.to(self.device)
-                    outputs = self.model(batch_seq)
-                    val_loss += criterion(outputs, batch_targ).item()
-            
-            avg_train_loss = train_loss / len(train_loader)
-            avg_val_loss = val_loss / len(val_loader)
-            
-            train_losses.append(avg_train_loss)
-            val_losses.append(avg_val_loss)
-            
-            if epoch % 10 == 0:
-                print(f'Epoch [{epoch}/{self.config.num_epochs}], '
-                      f'Train Loss: {avg_train_loss:.6f}, Val Loss: {avg_val_loss:.6f}')
-        
-        return train_losses, val_losses
-    
-    def forecast_future(self, model, last_sequence, steps=12):
-        """Generate multi-step forecasts"""
-        model.eval()
-        forecasts = []
-        current_sequence = last_sequence.clone()
-        
-        with torch.no_grad():
-            for step in range(steps):
-                # Predict next 4 weeks
-                pred = model(current_sequence.unsqueeze(0))  # (1, pred_len, 1)
-                
-                # Take all predictions for this step
-                step_forecasts = pred[0, :, 0].cpu().numpy()
-                forecasts.extend(step_forecasts)
-                
-                if step < steps - 1:  # Don't update after last prediction
-                    # Update sequence: remove first pred_len elements, add new predictions
-                    remaining_sequence = current_sequence[self.config.pred_len:]
-                    new_predictions = pred[0].detach()  # (pred_len, 1)
-                    
-                    # Ensure we maintain sequence length
-                    if len(remaining_sequence) + len(new_predictions) == self.config.seq_len:
-                        current_sequence = torch.cat([remaining_sequence, new_predictions], dim=0)
-                    else:
-                        # If sequence length doesn't match, use a different approach
-                        current_sequence = torch.cat([
-                            current_sequence[self.config.pred_len:], 
-                            new_predictions
-                        ], dim=0)
-                        # Truncate or pad to maintain seq_len
-                        if len(current_sequence) > self.config.seq_len:
-                            current_sequence = current_sequence[-self.config.seq_len:]
-        
-        return forecasts[:steps]  # Return only the requested number of steps
-
-def run_complete_forecasting_pipeline(df):
+def run_complete_forecasting_pipeline(df, store_num=1):
     """Complete forecasting pipeline integrating analysis and PatchTST"""
     
     # 1. Enhanced Analysis
-    analyzer = WalmartForecastAnalyzer()
-    processed_data = analyzer.load_and_preprocess_data(df)
-    forecasting_data = enhanced_forecasting_pipeline(df)
+    forecasting_data = enhanced_forecasting_pipeline(df, store_num)
     
     # 2. Prepare PatchTST Data
     config = Config()
     forecaster = EnhancedPatchTSTForecaster(config)
     
-    # Initialize your PatchTST model
-    n_channels = 1  # Univariate
+    # Initialize model
+    n_channels = 1
     model = SimplePatchTST(config, n_channels)
     model = model.to(config.device)
+    forecaster.model = model
     
     # Print model architecture
     print(f"\n=== Model Architecture ===")
     print(f"Input shape: (batch_size, {config.seq_len}, {n_channels})")
     print(f"Output shape: (batch_size, {config.pred_len}, 1)")
     print(f"Total parameters: {sum(p.numel() for p in model.parameters()):,}")
-    
-    forecaster.model = model
     
     # 3. Prepare data loaders
     train_loader, val_loader = forecaster.prepare_patchtst_data(forecasting_data)
@@ -329,7 +340,7 @@ def run_complete_forecasting_pipeline(df):
     
     # 6. Generate forecasts
     last_sequence = torch.FloatTensor(forecasting_data['val_sequences'][-1]).unsqueeze(-1)
-    forecasts = forecaster.forecast_future(model, last_sequence.to(config.device), steps=12)
+    forecasts = forecaster.forecast_future(last_sequence, steps=12)
     
     # Convert back to original scale
     forecasts_original = forecasting_data['scaler'].inverse_transform(
@@ -338,7 +349,7 @@ def run_complete_forecasting_pipeline(df):
     
     # 7. Plot forecasts
     plt.subplot(1, 2, 2)
-    actual_sales = forecasting_data['original_sales'][-24:]  # Last 24 weeks
+    actual_sales = forecasting_data['original_sales'][-24:]
     forecast_weeks = range(len(actual_sales), len(actual_sales) + len(forecasts_original))
     
     plt.plot(range(len(actual_sales)), actual_sales, label='Historical', marker='o')
@@ -362,47 +373,43 @@ def run_complete_forecasting_pipeline(df):
         'model': model,
         'forecasts': forecasts_original,
         'train_losses': train_losses,
-        'val_losses': val_losses
+        'val_losses': val_losses,
+        'forecasting_data': forecasting_data
     }
 
-# Store Comparison Forecasting
+
 def multi_store_forecasting(df, store_list=[1, 2]):
     """Compare forecasts across multiple stores"""
     
     store_forecasts = {}
     
     for store in store_list:
-        print(f"\n=== Forecasting for Store {store} ===")
+        print(f"\n{'='*50}")
+        print(f"Forecasting for Store {store}")
+        print('='*50)
         
-        # Analyze store
-        analyzer = WalmartForecastAnalyzer()
-        processed_data = analyzer.load_and_preprocess_data(df)
-        store_data = df[df['Store'] == store].copy()
-        
-        # Create forecasting dataset for this store
-        sequences, targets, original_sales = analyzer.create_forecasting_dataset(
-            store_num=store, seq_len=52, pred_len=4
-        )
-        
-        # Prepare data
-        forecasting_data = {
-            'train_sequences': sequences[:int(0.8 * len(sequences))],
-            'train_targets': targets[:int(0.8 * len(targets))],
-            'val_sequences': sequences[int(0.8 * len(sequences)):],
-            'val_targets': targets[int(0.8 * len(targets)):],
-            'scaler': analyzer.scaler,
-            'original_sales': original_sales
-        }
-        
-        print(f"Store {store}: {len(sequences)} sequences ready for training")
-        
-        store_stats = {
-            'avg_sales': store_data['Weekly_Sales'].mean(),
-            'sequences': len(sequences),
-            'data_quality': 'Good' if len(store_data) >= 52 else 'Limited'
-        }
-        
-        store_forecasts[store] = store_stats
+        try:
+            # Create analyzer for each store
+            analyzer = WalmartForecastAnalyzer()
+            analyzer.load_and_preprocess_data(df)
+            
+            # Create forecasting dataset
+            sequences, targets, original_sales = analyzer.create_forecasting_dataset(
+                store_num=store, seq_len=52, pred_len=4
+            )
+            
+            store_stats = {
+                'avg_sales': df[df['Store'] == store]['Weekly_Sales'].mean(),
+                'sequences': len(sequences),
+                'data_quality': 'Good' if len(df[df['Store'] == store]) >= 52 else 'Limited',
+                'total_weeks': len(df[df['Store'] == store])
+            }
+            
+            store_forecasts[store] = store_stats
+            
+        except Exception as e:
+            print(f"Error processing store {store}: {e}")
+            store_forecasts[store] = {'error': str(e)}
     
     # Compare stores
     print("\n=== Store Comparison ===")
@@ -410,6 +417,7 @@ def multi_store_forecasting(df, store_list=[1, 2]):
     print(comparison_df)
     
     return store_forecasts
+
 
 def enhanced_analysis_and_reporting(results, df, store_num=1):
     """Provide comprehensive analysis of forecasting results"""
@@ -439,7 +447,7 @@ def enhanced_analysis_and_reporting(results, df, store_num=1):
     forecast_trend = (results['forecasts'][-1] - results['forecasts'][0]) / results['forecasts'][0] * 100
     print(f"   Forecast Trend: {forecast_trend:+.2f}% over 12 weeks")
     
-    # Confidence intervals (simplified)
+    # Confidence intervals
     confidence_upper = forecast_avg + 1.96 * forecast_std
     confidence_lower = forecast_avg - 1.96 * forecast_std
     
@@ -482,8 +490,11 @@ def enhanced_analysis_and_reporting(results, df, store_num=1):
         'forecast_avg': forecast_avg,
         'variance_pct': variance_from_historical,
         'confidence_upper': confidence_upper,
-        'confidence_lower': confidence_lower
+        'confidence_lower': confidence_lower,
+        'final_train_loss': final_train_loss,
+        'final_val_loss': final_val_loss
     }
+
 
 def create_comprehensive_visualization(results, df, store_num=1):
     """Create enhanced visualization with insights"""
@@ -532,10 +543,10 @@ def create_comprehensive_visualization(results, df, store_num=1):
     
     # 4. Monthly Pattern Analysis
     plt.subplot(3, 2, 4)
-    store_data = df[df['Store'] == store_num].copy()
-    store_data['Date'] = pd.to_datetime(store_data['Date'], format='%d-%m-%Y')
-    store_data['Month'] = store_data['Date'].dt.month
-    monthly_avg = store_data.groupby('Month')['Weekly_Sales'].mean()
+    store_data_copy = df[df['Store'] == store_num].copy()
+    store_data_copy['Date'] = pd.to_datetime(store_data_copy['Date'], format='%d-%m-%Y')
+    store_data_copy['Month'] = store_data_copy['Date'].dt.month
+    monthly_avg = store_data_copy.groupby('Month')['Weekly_Sales'].mean()
     
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -573,28 +584,74 @@ def create_comprehensive_visualization(results, df, store_num=1):
     plt.savefig('results/comprehensive_forecasting_analysis.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-# Run the complete pipeline
-if __name__ == "__main__":
-    # Use your actual data here
-    df_path = r"C:\Users\Anvita\Desktop\ML_project\Walmart.csv"    
-    df = pd.read_csv(df_path)
+
+# ========== MAIN FUNCTION WITH COMMAND LINE INTERFACE ==========
+
+def main():
+    parser = argparse.ArgumentParser(description='Walmart Sales Forecasting Pipeline')
+    parser.add_argument('--data_path', type=str, 
+                       default=r"data/raw/walmart.csv",
+                       help='Path to Walmart CSV file')
+    parser.add_argument('--store_num', type=int, default=1,
+                       help='Store number to analyze (default: 1)')
+    parser.add_argument('--stores', type=str, default='1,2',
+                       help='Comma-separated list of stores to compare')
+    parser.add_argument('--mode', type=str, default='all',
+                       choices=['single', 'compare', 'analyze', 'visualize', 'all'],
+                       help='Pipeline mode')
+    parser.add_argument('--epochs', type=int, default=100,
+                       help='Number of training epochs')
+    parser.add_argument('--batch_size', type=int, default=32,
+                       help='Batch size for training')
+    
+    args = parser.parse_args()
     
     # Create results directory
-    import os
     os.makedirs('results', exist_ok=True)
     
-    # Run single store forecasting
-    results = run_complete_forecasting_pipeline(df)
-    
-    # Enhanced analysis and reporting
-    analysis_results = enhanced_analysis_and_reporting(results, df, store_num=1)
-    
-    # Comprehensive visualization
-    create_comprehensive_visualization(results, df, store_num=1)
-    
-    # Compare multiple stores
-    store_comparison = multi_store_forecasting(df, store_list=[1, 2])
-    
-    print("\n🎉 FORECASTING PIPELINE COMPLETED SUCCESSFULLY!")
-    print("📁 Results saved to 'results/' directory")
-    print("📊 Comprehensive analysis generated")
+    try:
+        # Load data
+        print(f"Loading data from {args.data_path}")
+        df = pd.read_csv(args.data_path)
+        print(f"Data loaded: {df.shape[0]} rows, {df.shape[1]} columns")
+        
+        if args.mode in ['single', 'all']:
+            # Run single store forecasting
+            print(f"\n{'='*60}")
+            print(f"RUNNING SINGLE STORE FORECASTING FOR STORE {args.store_num}")
+            print('='*60)
+            
+            results = run_complete_forecasting_pipeline(df, store_num=args.store_num)
+            
+            # Enhanced analysis and reporting
+            analysis_results = enhanced_analysis_and_reporting(results, df, store_num=args.store_num)
+            
+            # Comprehensive visualization
+            create_comprehensive_visualization(results, df, store_num=args.store_num)
+        
+        if args.mode in ['compare', 'all']:
+            # Compare multiple stores
+            store_list = [int(s) for s in args.stores.split(',')]
+            print(f"\n{'='*60}")
+            print(f"COMPARING MULTIPLE STORES: {store_list}")
+            print('='*60)
+            
+            store_comparison = multi_store_forecasting(df, store_list=store_list)
+        
+        print("\n" + "="*60)
+        print("🎉 FORECASTING PIPELINE COMPLETED SUCCESSFULLY!")
+        print("📁 Results saved to 'results/' directory")
+        print("📊 Comprehensive analysis generated")
+        print("="*60)
+        
+    except FileNotFoundError:
+        print(f"❌ ERROR: Data file not found at {args.data_path}")
+        print("Please check the path or use --data_path argument")
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main()

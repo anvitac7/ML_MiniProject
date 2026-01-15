@@ -1,0 +1,19 @@
+data:
+  raw_path: "data/raw/walmart.csv"
+  processed_dir: "data/processed/"
+  
+  features:
+    date_column: "Date"
+    target_column: "Weekly_Sales"
+    categorical_columns: ["Store", "Dept", "Type"]
+    numerical_columns: ["Temperature", "Fuel_Price", "CPI", "Unemployment"]
+  
+  preprocessing:
+    fill_missing: "forward"
+    scale_features: true
+    scale_method: "standard"
+  
+  split:
+    test_size: 0.2
+    time_based: true
+    date_cutoff: "2012-01-01"

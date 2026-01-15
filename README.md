@@ -1,7 +1,10 @@
-# 🏪 Walmart Sales Forecasting with PatchTST
+# Walmart Sales Forecasting using PatchTST
 
-This project implements an AI-powered sales forecasting system for Walmart stores using **PatchTST (Patch Time Series Transformer)** — a modern transformer-based deep learning model designed for time series forecasting.  
-It predicts weekly sales across multiple Walmart stores with **94.3% accuracy**, helping improve inventory, staffing, and business strategy.
+This project implements a modular time-series forecasting pipeline using the Walmart weekly sales dataset.
+The goal is to predict future weekly sales for multiple stores using transformer-based models, with a focus on clean code structure, reproducibility, and proper evaluation.
+
+The project compares baseline forecasting methods with PatchTST, a transformer architecture designed specifically for long-term time-series forecasting.
+
 
 <img width="3570" height="1166" alt="complete_forecasting_results" src="https://github.com/user-attachments/assets/0ae6d9cd-3fe3-49a9-87e4-eedaafc265c4" />
 

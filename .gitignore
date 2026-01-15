@@ -1,12 +1,25 @@
+# Data
+Data/processed/
+Data/raw/Dataset/  # if contains large files
+
+# Results
+Results/
+logs/
+
+# Python
 __pycache__/
-*.pyc
-*.pth
-*.pkl
-*.csv
-*.parquet
-.DS_Store
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+
+# Jupyter
 .ipynb_checkpoints/
-results/
-saved_models/
-data/raw/
-data/processed/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
