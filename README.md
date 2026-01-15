@@ -1,51 +1,50 @@
 # Walmart Sales Forecasting using PatchTST
 
-Predicting future weekly sales for Walmart stores using a transformer-based time series forecasting model.
-
-This project implements a machine learning pipeline using the PatchTST architecture to forecast weekly sales across multiple Walmart stores. The goal is to analyze historical sales data and generate accurate future sales predictions.
+A machine learning project focused on forecasting weekly Walmart store sales using a transformer-based time-series model (PatchTST). The project demonstrates end-to-end model development, from data preprocessing to evaluation and visualization.
 
 ---
 
-## 🧠 Project Overview
+## 🧠 Project Summary
 
-- Forecasts weekly sales using time-series data
-- Uses PatchTST (Transformer for Time Series)
-- Compares actual vs predicted sales
-- Designed as a mini project for academic and learning purposes
-
----
-
-## 📦 Features
-
-- Data preprocessing and normalization
-- Transformer-based forecasting model
-- Multi-store sales prediction
-- Visualization of results
-- Clean and modular code structure
+- Built a time-series forecasting pipeline for predicting weekly retail sales
+- Implemented PatchTST, a transformer architecture designed for long-term forecasting
+- Trained and evaluated models across multiple Walmart stores
+- Visualized predicted vs actual sales to assess model performance
+- Designed with modular, reusable code suitable for real-world ML workflows
 
 ---
 
-## 🛠️ Requirements
+## 🔧 Technical Highlights
 
-- Python 3.8+
-- Required libraries listed in `requirements.txt`
+- Time-series data preprocessing and normalization
+- Sequence generation for supervised learning
+- Transformer-based forecasting using PatchTST
+- Model training, evaluation, and result visualization
+- Clean project structure following ML engineering best practices
 
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
 ---
+
+## 🛠️ Tech Stack
+
+- **Programming Language:** Python  
+- **Libraries:** NumPy, Pandas, PyTorch / TensorFlow (as applicable), Matplotlib  
+- **Domain:** Time-Series Forecasting, Deep Learning  
+
+---
+
 ## 🗂️ Project Structure
+
+```text
 ML_MiniProject/
-├── data/                   # Dataset files
-├── src/                    # Source code
-│   ├── preprocessing.py    # Data cleaning and preparation
-│   ├── model.py            # PatchTST model
-│   ├── train.py            # Model training
-│   └── evaluate.py         # Model evaluation
+├── data/                   # Raw and processed datasets
+├── src/                    # Core source code
+│   ├── preprocessing.py    # Data cleaning and feature preparation
+│   ├── model.py            # PatchTST model implementation
+│   ├── train.py            # Training pipeline
+│   └── evaluate.py         # Evaluation and visualization
 ├── requirements.txt
 └── README.md
+```
 
 ---
 
@@ -73,31 +72,26 @@ python src/evaluate.py
 ```
 ---
 
-## 📊 Output
+## 📊 Results
 
-- Predicted vs actual sales plots
-- Model evaluation metrics
-- Store-level forecasting results
-
----
-
-## 🔍 Model Used
-
-PatchTST (Patch Time Series Transformer)
-
-A transformer architecture designed for long-term time-series forecasting by learning temporal dependencies through attention mechanisms.
+- Generated weekly sales forecasts for multiple stores
+- Compared predicted and actual sales trends using visual plots
+- Evaluated forecasting accuracy using standard regression metrics
 
 ---
 
-## 📝 Notes
+## 📌 Key Learnings
 
-- This project is intended for educational use.
-- You can extend it by adding more features or trying different forecasting models.
+- Practical implementation of transformer models for time-series data
+- Handling real-world retail sales datasets
+- Structuring ML projects for scalability and readability
+- Interpreting forecasting results for business insights
 
 ---
 
 ## 🙌 Author
 Anvita Choudhary
+
 
 
 
