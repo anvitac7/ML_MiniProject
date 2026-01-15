@@ -61,9 +61,9 @@ cd ML_MiniProject
 ```
 Add the dataset to the data/ folder.
 The dataset should include:
-Store ID
-Date
-Weekly sales values
+- Store ID
+- Date
+- Weekly sales values
 
 Train the model:
 ```bash
@@ -78,26 +78,27 @@ python src/evaluate.py
 
 ## 📊 Output
 
-Predicted vs actual sales plots
-Model evaluation metrics
-Store-level forecasting results
+- Predicted vs actual sales plots
+- Model evaluation metrics
+- Store-level forecasting results
 
 ---
 
 ## 🔍 Model Used
 
-PatchTST (Patch Time Series Transformer)
-A transformer architecture designed for long-term time-series forecasting by learning temporal dependencies through attention mechanisms.
+- PatchTST (Patch Time Series Transformer)
+- A transformer architecture designed for long-term time-series forecasting by learning temporal dependencies through attention mechanisms.
 
 ---
 
 ## 📝 Notes
 
-This project is intended for educational use.
-You can extend it by adding more features or trying different forecasting models.
+- This project is intended for educational use.
+- You can extend it by adding more features or trying different forecasting models.
 
 ---
 
 ## 🙌 Author
 Anvita Choudhary
+
 
