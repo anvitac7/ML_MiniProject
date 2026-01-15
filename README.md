@@ -1,34 +1,23 @@
-# Walmart Sales Forecasting using PatchTST
+# Walmart Sales Forecasting with PatchTST & LSTM
 
-A machine learning project focused on forecasting weekly Walmart store sales using a transformer-based time-series model (PatchTST). The project demonstrates end-to-end model development, from data preprocessing to evaluation and visualization.
-
+An end-to-end Time-Series Forecasting pipeline comparing State-of-the-Art (SOTA) Transformers against traditional RNNs. This project features a professional ML engineering workflow, automated experiment tracking, and an interactive business intelligence dashboard.
 ---
 
 ## 🧠 Project Summary
 
-- Built a time-series forecasting pipeline for predicting weekly retail sales
-- Implemented PatchTST, a transformer architecture designed for long-term forecasting
-- Trained and evaluated models across multiple Walmart stores
-- Visualized predicted vs actual sales to assess model performance
-- Designed with modular, reusable code suitable for real-world ML workflows
+- **Advanced Modeling:** Implemented PatchTST, a transformer architecture that uses sub-series patching to capture local semantic patterns more effectively than point-wise models.
+- **Comparative Analysis:** Includes a Simple LSTM baseline to benchmark the performance gains of transformer-based forecasting.
+- **Interactive Interface:** Developed a Streamlit dashboard for real-time forecasting, allowing users to simulate "What-If" scenarios and explore seasonal trends.
+- **MLOps Integration:** Integrated with Weights & Biases (W&B) for experiment tracking and hyperparameter logging.
 
 ---
 
 ## 🔧 Technical Highlights
 
-- Time-series data preprocessing and normalization
-- Sequence generation for supervised learning
-- Transformer-based forecasting using PatchTST
-- Model training, evaluation, and result visualization
-- Clean project structure following ML engineering best practices
-
----
-
-## 🛠️ Tech Stack
-
-- **Programming Language:** Python  
-- **Libraries:** NumPy, Pandas, PyTorch / TensorFlow (as applicable), Matplotlib  
-- **Domain:** Time-Series Forecasting, Deep Learning  
+- **Custom Data Pipeline:** Robust date parsing (DD-MM-YYYY) and sliding-window sequence generation (52-week history to predict 4-week future).
+- **Seasonal Decomposition:** Automated extraction of Trend and Seasonality using statsmodels to provide deeper business insights.
+- **Scalable Structure:** Decoupled model logic (src/models) from data utilities (src/utils) to follow industry clean-code standards.
+- **Error Diagnostics:** Built-in residual analysis to identify model bias and prediction skewness.
 
 ---
 
@@ -37,78 +26,62 @@ A machine learning project focused on forecasting weekly Walmart store sales usi
 ```text
 ML_MINIPROJECT/
 ├── app/
-│   └── app.py                 # Entry point for running the application
-│
+│   └── app.py                # Interactive Streamlit dashboard
 ├── data/
-│   └── walmart.csv            # Walmart weekly sales dataset
-│
+│   └── walmart.csv           # Walmart weekly sales dataset
 ├── results/
-│   ├── forecast_vs_actual.png # Sales forecast vs actual visualization
-│   └── training_loss.png      # Model training loss curve
-│
+│   ├── forecast_vs_actual.png # Visual validation of predictions
+│   └── training_loss.png      # Training/Validation convergence curves
 ├── src/
 │   ├── models/
-│   │   ├── lstm.py             # LSTM baseline model
-│   │   └── patchtst.py         # PatchTST transformer model
-│   │
+│   │   ├── lstm.py           # Baseline LSTM implementation
+│   │   └── patchtst.py       # SOTA PatchTST Transformer model
 │   ├── utils/
-│   │   ├── data.py             # Data loading and preprocessing utilities
-│   │   └── plots.py            # Visualization utilities
-│   │
-│   ├── main.py                 # End-to-end pipeline execution
-│   └── train.py                # Model training logic
-│
-├── .gitignore
-├── requirements.txt
+│   │   ├── data.py           # Data loaders & scaling logic (fixed date parsing)
+│   │   └── plots.py          # Visualization utilities
+│   ├── main.py               # CLI Entry point for training models
+│   └── train.py              # Modular training & W&B logging logic
+├── requirements.txt          # Reproducible environment
 └── README.md
-
 ```
 
 ---
 
 ## 🚀 How to Run
-Clone the repository:
+1. Setup Environment
 ```bash
 git clone https://github.com/anvitac7/ML_MiniProject.git
 cd ML_MiniProject
+pip install -r requirements.txt
 ```
-Add the dataset to the data/ folder.
 
-The dataset should include:
-- Store ID
-- Date
-- Weekly sales values
-
-Train the model:
+2. Train Models (CLI):
+You can train either model for a specific store via the terminal:
 ```bash
-python src/train.py
+# Train the Transformer
+python -m src.main --model patchtst --store 1 --epochs 50
+
+# Train the LSTM baseline
+python -m src.main --model lstm --store 1 --epochs 50
 ```
 
-Evaluate results:
+3. Launch Interactive Dashboard
 ```bash
-python src/evaluate.py
+streamlit run app/app.py
 ```
+
 ---
 
 ## 📊 Results
 
-- Generated weekly sales forecasts for multiple stores
-- Compared predicted and actual sales trends using visual plots
-- Evaluated forecasting accuracy using standard regression metrics
-
----
-
-## 📌 Key Learnings
-
-- Practical implementation of transformer models for time-series data
-- Handling real-world retail sales datasets
-- Structuring ML projects for scalability and readability
-- Interpreting forecasting results for business insights
+- PatchTST Performance: Demonstrates superior capture of holiday-driven sales spikes (seasonality) compared to standard RNNs.
+- Interpretability: Dashboard metrics show Accuracy % and MSE/MAE side-by-side for executive-level decision making.
 
 ---
 
 ## 🙌 Author
 Anvita Choudhary
+
 
 
 
