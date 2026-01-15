@@ -1,6 +1,7 @@
 # Walmart Sales Forecasting with PatchTST & LSTM
 
 An end-to-end Time-Series Forecasting pipeline comparing State-of-the-Art (SOTA) Transformers against traditional RNNs. This project features a professional ML engineering workflow, automated experiment tracking, and an interactive business intelligence dashboard.
+
 ---
 
 ## 🧠 Project Summary
@@ -81,6 +82,7 @@ streamlit run app/app.py
 
 ## 🙌 Author
 Anvita Choudhary
+
 
 
 
