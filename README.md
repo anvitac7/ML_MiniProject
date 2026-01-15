@@ -35,15 +35,33 @@ A machine learning project focused on forecasting weekly Walmart store sales usi
 ## 🗂️ Project Structure
 
 ```text
-ML_MiniProject/
-├── data/                   # Raw and processed datasets
-├── src/                    # Core source code
-│   ├── preprocessing.py    # Data cleaning and feature preparation
-│   ├── model.py            # PatchTST model implementation
-│   ├── train.py            # Training pipeline
-│   └── evaluate.py         # Evaluation and visualization
+ML_MINIPROJECT/
+├── app/
+│   └── app.py                 # Entry point for running the application
+│
+├── data/
+│   └── walmart.csv            # Walmart weekly sales dataset
+│
+├── results/
+│   ├── forecast_vs_actual.png # Sales forecast vs actual visualization
+│   └── training_loss.png      # Model training loss curve
+│
+├── src/
+│   ├── models/
+│   │   ├── lstm.py             # LSTM baseline model
+│   │   └── patchtst.py         # PatchTST transformer model
+│   │
+│   ├── utils/
+│   │   ├── data.py             # Data loading and preprocessing utilities
+│   │   └── plots.py            # Visualization utilities
+│   │
+│   ├── main.py                 # End-to-end pipeline execution
+│   └── train.py                # Model training logic
+│
+├── .gitignore
 ├── requirements.txt
 └── README.md
+
 ```
 
 ---
@@ -91,6 +109,7 @@ python src/evaluate.py
 
 ## 🙌 Author
 Anvita Choudhary
+
 
 
 
