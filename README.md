@@ -1,6 +1,11 @@
-# Walmart Sales Forecasting with PatchTST & LSTM
+# 🛒 Walmart Sales Forecasting with PatchTST & LSTM
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-FF4B4B.svg)](https://streamlit.io/)
 
 An end-to-end Time-Series Forecasting pipeline comparing State-of-the-Art (SOTA) Transformers against traditional RNNs. This project features a professional ML engineering workflow, automated experiment tracking, and an interactive business intelligence dashboard.
+
+> **TL;DR:** Comparing PatchTST vs LSTM for Walmart sales forecasting across 45 stores. LSTM wins on small datasets (<100 weeks), PatchTST excels with more data. Includes interactive dashboard with trend decomposition.
 
 ---
 
@@ -15,14 +20,30 @@ Key Features:
 
 ---
 
-## 📈 Sample Results
+## 🖥️ Interactive Dashboard
+![Dashboard Overview](results/dashboard_main.png)
+*Business Intelligence interface with real-time model comparison and performance metrics*
 
-### Training Convergence
-![Training Loss](results/training_loss.png)
+---
 
-### Forecast Quality
-![Predictions vs Actual](results/forecast_vs_actual.png)
-*4-week forecast for Store 21 showing seasonal patterns*
+## 📊 Dashboard Capabilities
+### Performance Monitoring
+- Live accuracy tracking: PatchTST (93.8%) vs LSTM (95.9%)
+- Smart recommendation engine highlighting top-performing model per store
+- Store-specific analysis across 45 Walmart locations
+
+### Sales Forecasting
+- 4-week ahead predictions with dual-model comparison
+- Visual separation of historical data and future forecasts
+- Confidence tracking through accuracy metrics
+
+![Pattern Analysis](results/dashboard_pattern.png)
+*Automated trend and seasonality decomposition for explainable forecasting*
+
+### Pattern Discovery
+- Trend Analysis: Identifies long-term growth or decline patterns
+- Seasonality Detection: Reveals recurring weekly/monthly cycles
+- Business Insights: Translates complex ML outputs into actionable retail intelligence
 
 ---
 
@@ -67,7 +88,7 @@ The core innovation in this project is the Patching Layer. Instead of treating e
 
 - **Multivariate Scaling:** Implemented a StandardScaler pipeline that handles multiple features with different units (e.g., Temperature vs. Millions of dollars in Sales) to ensure model convergence.
 - **3D Tensor Engineering:** Designed a data loader that transforms raw CSV data into (Batch, Sequence, Features) tensors, compatible with high-performance Transformer encoders.
-- **Seasonal Decomposition:** Integrated statsmodels to extract underlying trends from noisy retail data, providing an "Explainable AI" layer for store managers.ness.
+- **Seasonal Decomposition:** Integrated statsmodels to extract underlying trends from noisy retail data, providing an "Explainable AI" layer for store managers.
 
 ---
 
@@ -76,23 +97,26 @@ The core innovation in this project is the Patching Layer. Instead of treating e
 ```text
 ML_MINIPROJECT/
 ├── app/
-│   └── app.py                # Interactive Streamlit dashboard
+│   └── app.py                    # Interactive Streamlit dashboard
 ├── data/
-│   └── walmart.csv           # Walmart weekly sales dataset
+│   └── walmart.csv               # Walmart weekly sales dataset
 ├── results/
-│   ├── forecast_vs_actual.png # Visual validation of predictions
-│   └── training_loss.png      # Training/Validation convergence curves
+│   ├── dashboard_main.png        # Dashboard overview screenshot
+│   ├── dashboard_patterns.png    # Pattern discovery screenshot
+│   ├── forecast_vs_actual.png    # Visual validation of predictions
+│   └── training_loss.png         # Training/Validation convergence curves
 ├── src/
 │   ├── models/
-│   │   ├── lstm.py           # Baseline LSTM implementation
-│   │   └── patchtst.py       # SOTA PatchTST Transformer model
+│   │   ├── lstm.py               # Baseline LSTM implementation
+│   │   └── patchtst.py           # SOTA PatchTST Transformer model
 │   ├── utils/
-│   │   ├── data.py           # Data loaders & scaling logic (fixed date parsing)
-│   │   └── plots.py          # Visualization utilities
-│   ├── main.py               # CLI Entry point for training models
-│   └── train.py              # Modular training & W&B logging logic
-├── requirements.txt          # Reproducible environment
-└── README.md
+│   │   ├── data.py               # Data loaders & scaling logic
+│   │   └── plots.py              # Visualization utilities
+│   ├── evaluate.py               # Multi-store benchmarking script
+│   ├── main.py                   # CLI entry point for training
+│   └── train.py                  # Modular training & W&B logging
+├── requirements.txt              # Reproducible environment
+├── README.md                     # Project documentation
 ```
 
 ---
@@ -132,5 +156,3 @@ streamlit run app/app.py
 ---
 ## 🙌 Author
 Anvita Choudhary _ML Engineering Project | Time-Series Focus_
-
-
