@@ -4,18 +4,24 @@ An end-to-end Time-Series Forecasting pipeline comparing State-of-the-Art (SOTA)
 
 ---
 
-## 🧠 Project Summary
+## 🚀 Project Overview
 
-- **Multivariate Forecasting:** Unlike univariate models, this pipeline integrates 5 key economic features: Weekly Sales, Holiday Flags, Temperature, Fuel Price, and Unemployment to predict future demand.
-- **Advanced Modeling:** Implemented a custom PatchTST (Patch Time Series Transformer). By grouping time steps into sub-series "patches," the model captures local semantic patterns more effectively than point-wise transformers.
-- **Comparative Analysis:** Includes a Simple LSTM baseline to benchmark and quantify the performance gains of transformer-based architectures.
-- **Interactive Interface:** A Streamlit dashboard for real-time forecasting, allowing managers to explore seasonal trends and model accuracy across 45 different stores.
+The goal of this project is to predict weekly sales across different Walmart departments. We specifically evaluate whether PatchTST (Patch Time Series Transformer) outperforms a baseline LSTM in a retail context.
+
+Key Features:
+- Patching Mechanism: Implements PatchTST to handle long-term dependencies by grouping time steps into patches.
+- Comparative Analysis: Side-by-side performance metrics for 4 representative stores.
+- Interactive UI: A Streamlit app that allows users to select stores and visualize forecasts.
 
 ---
 
 ## 📊 Performance & Comparative Results
 
-To ensure transparency and address model robustness, the models were benchmarked across multiple stores using Mean Absolute Error (MAE) and Mean Squared Error (MSE).
+In the initial results, PatchTST underperformed the LSTM on 2 out of 4 stores (Store [1] and Store [15]).
+Why did PatchTST underperform?
+- Data Volume: PatchTST is a high-capacity model that thrives on large-scale data. For individual stores with limited history, the LSTM’s simpler architecture acted as a regularizer, preventing the overfitting seen in the Transformer model.
+- Hyperparameter Sensitivity: Current results suggest the PatchTST requires more granular tuning of patch length and stride for smaller datasets.
+
 ```text
 |   Store |   PatchTST MAE |   LSTM MAE | Improvement   |
 |--------:|---------------:|-----------:|:--------------|
@@ -24,7 +30,6 @@ To ensure transparency and address model robustness, the models were benchmarked
 |      21 |         0.447  |     0.5152 | 13.2%         |
 |      33 |         0.6325 |     0.6584 | 3.9%          |
 ```
-Metrics calculated on a 4-week forecast horizon using a 52-week historical look-back window.
 
 ---
 
@@ -92,8 +97,15 @@ streamlit run app/app.py
 
 ---
 
+## 🧪 Scalability & Future Scope
+- Global Modeling: Currently, models are trained per-store. Moving to a Global Model (training on all 45 stores simultaneously) would allow PatchTST to leverage cross-series information.
+- Statistical Significance: Future iterations will include Diebold-Mariano tests to confirm if PatchTST improvements are statistically significant.
+- Deployment: The app is designed to be containerized using Docker and can be deployed via AWS App Runner or Streamlit Cloud.
+
+---
 ## 🙌 Author
 Anvita Choudhary ML Engineering Project | Time-Series Focus
+
 
 
 
