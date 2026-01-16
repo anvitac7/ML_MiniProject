@@ -6,8 +6,6 @@ import plotly.graph_objects as go
 from statsmodels.tsa.seasonal import seasonal_decompose
 import sys
 import os
-import shap
-import matplotlib.pyplot as plt
 
 # Ensure src is in path for imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -34,40 +32,6 @@ def load_resources(store_id):
     p_model = PatchTST(52, 4)
     l_model = SimpleLSTM(output_dim=4)
     return dataset, data, p_model, l_model
-
-def show_xai_analysis(model, input_data, feature_names):
-    """Explains why the model is predicting high or low sales."""
-    st.subheader("🕵️ AI Decision Logic (Explainable AI)")
-    st.write("Impact of each factor on the 4-week forecast:")
-    
-    # SHAP calculates 'contribution' for each feature
-    explainer = shap.GradientExplainer(model, input_data)
-    shap_values = explainer.shap_values(input_data)
-    
-    # Mean impact across the 4 predicted weeks
-    avg_impact = np.abs(shap_values[0]).mean(axis=0) 
-    
-    fig, ax = plt.subplots(figsize=(8, 4))
-    colors = ['#3498DB', '#E74C3C', '#F1C40F', '#2ECC71', '#9B59B6']
-    ax.barh(feature_names, avg_impact, color=colors)
-    st.pyplot(fig)
-    return feature_names[np.argmax(avg_impact)]
-
-def show_strategic_advice(predicted_trend, dominant_factor):
-    """Provides specific retail strategies based on the AI results."""
-    st.subheader("📝 Manager's Action Plan")
-    
-    if predicted_trend < 0:
-        st.error(f"📉 Sales dip predicted. Driver: {dominant_factor}")
-        if dominant_factor == "Unemployment":
-            st.info("**Action:** Pivot to 'Essential Value' product bundles; local purchasing power is dropping.")
-        elif dominant_factor == "Temperature":
-            st.info("**Action:** Optimize climate-sensitive inventory; local weather is impacting foot traffic.")
-        else:
-            st.info("**Action:** Launch a 'Mid-Week Loyalty' discount to counteract the expected slow-down.")
-    else:
-        st.success("📈 Sales growth predicted. Driver: Holiday/Organic Demand.")
-        st.info("**Action:** Increase floor staff and ensure top-selling items are fully stocked.")
 
 # --- Header Section ---
 st.title("🏪 Walmart Sales Intelligence Dashboard")
