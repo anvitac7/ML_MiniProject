@@ -15,6 +15,17 @@ Key Features:
 
 ---
 
+## 📈 Sample Results
+
+### Training Convergence
+![Training Loss](results/training_loss.png)
+
+### Forecast Quality
+![Predictions vs Actual](results/forecast_vs_actual.png)
+*4-week forecast for Store 21 showing seasonal patterns*
+
+---
+
 ## 📊 Performance & Comparative Results
 
 In the initial results, PatchTST underperformed the LSTM on 2 out of 4 stores (Store [1] and Store [15]).
@@ -30,6 +41,15 @@ Why did PatchTST underperform?
 |      21 |         0.447  |     0.5152 | 13.2%         |
 |      33 |         0.6325 |     0.6584 | 3.9%          |
 ```
+
+---
+
+## 📦 Dataset Details
+- **Source:** Walmart Store Sales Forecasting (Kaggle)
+- **Time Range:** Feb 2010 - Oct 2012
+- **Granularity:** Weekly aggregated sales
+- **Features:** 5 (Weekly_Sales, Holiday_Flag, Temperature, Fuel_Price, Unemployment)
+- **Stores:** 45 locations across different regions
 
 ---
 
@@ -94,6 +114,13 @@ python -m src.evaluate
 ```bash
 streamlit run app/app.py
 ```
+---
+
+## ⚠️ Known Limitations
+- Models trained on individual stores (not global)
+- No handling of extreme outliers (e.g., Black Friday spikes)
+- Requires minimum 52 weeks of historical data
+- Streamlit app runs locally only (not production-ready)
 
 ---
 
@@ -104,13 +131,6 @@ streamlit run app/app.py
 
 ---
 ## 🙌 Author
-Anvita Choudhary ML Engineering Project | Time-Series Focus
-
-
-
-
-
-
-
+Anvita Choudhary _ML Engineering Project | Time-Series Focus_
 
 
