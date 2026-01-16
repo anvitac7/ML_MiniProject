@@ -37,7 +37,7 @@ Key Features:
 - Visual separation of historical data and future forecasts
 - Confidence tracking through accuracy metrics
 
-![Pattern Analysis](results/dashboard_pattern.png)
+![Pattern Analysis](results/dashbaord_pattern.png)
 *Automated trend and seasonality decomposition for explainable forecasting*
 
 ### Pattern Discovery
@@ -156,3 +156,4 @@ streamlit run app/app.py
 ---
 ## 🙌 Author
 Anvita Choudhary _ML Engineering Project | Time-Series Focus_
+
