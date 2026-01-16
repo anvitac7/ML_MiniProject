@@ -8,7 +8,7 @@ from src.utils.data import WalmartDataset
 def run_benchmarks():
     dataset = WalmartDataset("data/walmart.csv")
     # Test across multiple stores to show robustness
-    stores_to_test = [1, 5, 10, 20]
+    stores_to_test = [1, 15, 21, 33]
     all_metrics = []
 
     for store in stores_to_test:
