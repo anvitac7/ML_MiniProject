@@ -1,7 +1,11 @@
-streamlit
-pandas
-numpy
 torch
-shap
+numpy
+pandas
 matplotlib
 scikit-learn
+wandb
+streamlit
+pytest
+statsmodels
+plotly
+streamlit
