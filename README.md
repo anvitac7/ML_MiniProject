@@ -6,19 +6,43 @@ An end-to-end Time-Series Forecasting pipeline comparing State-of-the-Art (SOTA)
 
 ## 🧠 Project Summary
 
-- **Advanced Modeling:** Implemented PatchTST, a transformer architecture that uses sub-series patching to capture local semantic patterns more effectively than point-wise models.
-- **Comparative Analysis:** Includes a Simple LSTM baseline to benchmark the performance gains of transformer-based forecasting.
-- **Interactive Interface:** Developed a Streamlit dashboard for real-time forecasting, allowing users to simulate "What-If" scenarios and explore seasonal trends.
-- **MLOps Integration:** Integrated with Weights & Biases (W&B) for experiment tracking and hyperparameter logging.
+- **Multivariate Forecasting:** Unlike univariate models, this pipeline integrates 5 key economic features: Weekly Sales, Holiday Flags, Temperature, Fuel Price, and Unemployment to predict future demand.
+- **Advanced Modeling:** Implemented a custom PatchTST (Patch Time Series Transformer). By grouping time steps into sub-series "patches," the model captures local semantic patterns more effectively than point-wise transformers.
+- **Comparative Analysis:** Includes a Simple LSTM baseline to benchmark and quantify the performance gains of transformer-based architectures.
+- **Interactive Interface:** A Streamlit dashboard for real-time forecasting, allowing managers to explore seasonal trends and model accuracy across 45 different stores.
+
+---
+
+## 📊 Performance & Comparative Results
+
+To ensure transparency and address model robustness, the models were benchmarked across multiple stores using Mean Absolute Error (MAE) and Mean Squared Error (MSE).
+```text
+|   Store |   PatchTST MAE |   LSTM MAE | Improvement   |
+|--------:|---------------:|-----------:|:--------------|
+|       1 |         0.4743 |     0.4431 | -7.1%         |
+|      15 |         0.445  |     0.346  | -28.6%        |
+|      21 |         0.447  |     0.5152 | 13.2%         |
+|      33 |         0.6325 |     0.6584 | 3.9%          |
+```
+Metrics calculated on a 4-week forecast horizon using a 52-week historical look-back window.
+
+---
+
+## 🏗️ Architectural Deep-Dive
+
+PatchTST Implementation
+The core innovation in this project is the Patching Layer. Instead of treating each week as an isolated token, the model:
+- Patches: Groups the input into overlapping 16-week windows.
+- Projects: Maps these patches into a 128-dimensional latent space.
+- Attends: Uses Multi-Head Self-Attention to find correlations between different times of the year (e.g., how "Temperature" in Week 10 impacts "Sales" in Week 40).
 
 ---
 
 ## 🔧 Technical Highlights
 
-- **Custom Data Pipeline:** Robust date parsing (DD-MM-YYYY) and sliding-window sequence generation (52-week history to predict 4-week future).
-- **Seasonal Decomposition:** Automated extraction of Trend and Seasonality using statsmodels to provide deeper business insights.
-- **Scalable Structure:** Decoupled model logic (src/models) from data utilities (src/utils) to follow industry clean-code standards.
-- **Error Diagnostics:** Built-in residual analysis to identify model bias and prediction skewness.
+- **Multivariate Scaling:** Implemented a StandardScaler pipeline that handles multiple features with different units (e.g., Temperature vs. Millions of dollars in Sales) to ensure model convergence.
+- **3D Tensor Engineering:** Designed a data loader that transforms raw CSV data into (Batch, Sequence, Features) tensors, compatible with high-performance Transformer encoders.
+- **Seasonal Decomposition:** Integrated statsmodels to extract underlying trends from noisy retail data, providing an "Explainable AI" layer for store managers.ness.
 
 ---
 
@@ -56,14 +80,9 @@ cd ML_MiniProject
 pip install -r requirements.txt
 ```
 
-2. Train Models (CLI):
-You can train either model for a specific store via the terminal:
+2. Generate Performance Metrics To reproduce the comparative table and verify model robustness:
 ```bash
-# Train the Transformer
-python -m src.main --model patchtst --store 1 --epochs 50
-
-# Train the LSTM baseline
-python -m src.main --model lstm --store 1 --epochs 50
+python -m src.evaluate
 ```
 
 3. Launch Interactive Dashboard
@@ -73,15 +92,9 @@ streamlit run app/app.py
 
 ---
 
-## 📊 Results
-
-- PatchTST Performance: Demonstrates superior capture of holiday-driven sales spikes (seasonality) compared to standard RNNs.
-- Interpretability: Dashboard metrics show Accuracy % and MSE/MAE side-by-side for executive-level decision making.
-
----
-
 ## 🙌 Author
-Anvita Choudhary
+Anvita Choudhary ML Engineering Project | Time-Series Focus
+
 
 
 
